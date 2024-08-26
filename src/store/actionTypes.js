@@ -1,0 +1,5 @@
+export const HANDLE_LOGIN_KELAS = 'login/kelas'
+export const READ_SCHEDULE_BY_KELAS = 'read/schedule/kelas'
+export const VALIDASI_KELAS = 'validasi/kelas'
+export const READ_DATA_KELAS = 'data/kelas'
+export const POST_DATA_KELAS = 'post/kelas'
