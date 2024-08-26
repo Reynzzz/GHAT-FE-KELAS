@@ -6,8 +6,8 @@ export default {
   theme: {
     extend: {
       backgroundImage: {
-        "back-mobile": "url('./src/assets/images/Back_mobile.svg')",
-        "bg-log": "url('./src/assets/images/bg_log.jpg')",
+        "back-mobile": "url('./assets/images/Back_mobile.svg')",
+        "bg-log": "url('./assets/images/bg_log.jpg')",
       },
     },
     screens: {

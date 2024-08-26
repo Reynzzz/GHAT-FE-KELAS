@@ -1,11 +1,11 @@
 import React from 'react';
-
+import logoMobile from './../assets/icons/logo_mobile.png'
 const Logo = ({ imageProps, h1Props, h4Props }) => {
   return (
     <>
       <img
-        src="/src/assets/icons/logo_mobile.png"
-        alt=""
+        src={logoMobile}
+        alt="mtsn 1 palu logo"
         className={imageProps}
       />
       <div>
