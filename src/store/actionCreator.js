@@ -62,32 +62,39 @@ export const actionGenerator = (type, payload) => {
       }
     };
   };
-  export const validasiByKelas= (id) => {
-    // console.log(id);
+  export const validasiByKelas = (id, deskripsiKelas) => {
     return async (dispatch) => {
       try {
-        // localStorage.setItem("access_token", access_token);
-        const token = localStorage.getItem("access_token"); 
-        // console.log(token,'ni log');// Ambil token dari localStorage
-        const response = await fetch(BASE_URL + `/validasiKelas/${id}`, {
+        const token = localStorage.getItem("access_token");
+        const response = await fetch(`${BASE_URL}/validasiKelas/${id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            'Authorization': `Bearer ${token}`,
-            // access_token: localStorage.getItem("access_token"),
+            Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({ deskripsiKelas }), // Bungkus sebagai objek
         });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "eror update");
+  
+        // Cek apakah respons JSON valid
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Server tidak mengembalikan JSON.");
         }
-        dispatch(fetchScheduleByUser,(actionGenerator(VALIDASI_KELAS, data)));
+  
+        const data = await response.json();
+  
+        if (!response.ok) {
+          throw new Error(data.error || "Gagal melakukan update.");
+        }
+  
+        dispatch(fetchScheduleByUser(),actionGenerator(VALIDASI_KELAS, data)); // Panggil action
       } catch (error) {
-        console.log(error, "<<<<<<<<<");
+        console.log("Gagal memvalidasi:", error);
         throw error;
       }
     };
   };
+  
   export const fetchDataKelas = () => {
     return async (dispatch) => {
       try {

@@ -1,43 +1,14 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { FaCalendarCheck, FaCheck, FaTimes } from "react-icons/fa";
 import { fetchScheduleByUser, validasiByKelas } from "../store/actionCreator";
-import { FaCheck, FaTimes, FaCalendarCheck } from 'react-icons/fa';
 import { toast } from "react-toastify";
-
-const isLate = (jadwal, absen) => {
-  if (!jadwal || !absen) return false;
-  
-  const jadwalTime = new Date(jadwal);
-  const absenTime = new Date(absen);
-  
-  // Hitung selisih waktu dalam menit
-  const diffMinutes = (absenTime - jadwalTime) / (1000 * 60);
-  
-  // Keterlambatan jika lebih dari 15 menit
-  return diffMinutes > 15;
-};
-
-const RealTimeClock = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Update every minute
-
-    return () => clearInterval(intervalId); // Clear interval on component unmount
-  }, []);
-
-  const timeOptions = { hour: '2-digit', minute: '2-digit' };
-  return (
-    <span>{currentTime.toLocaleTimeString(undefined, timeOptions)}</span>
-  );
-};
 
 export const TeacherValidation = () => {
   const dispatch = useDispatch();
   const [localUsers, setLocalUsers] = useState([]);
-  const { validasiKelas } = useSelector(state => state.validasiKelas);
+  const { validasiKelas } = useSelector((state) => state.validasiKelas);
+  const [modalData, setModalData] = useState({ isOpen: false, id: null, deskripsiKelas: "" });
 
   useEffect(() => {
     dispatch(fetchScheduleByUser());
@@ -48,126 +19,116 @@ export const TeacherValidation = () => {
   }, [validasiKelas]);
 
   const formatDate = (dateString) => {
-    const options = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        hour12: false,
-        timeZone: 'Asia/Makassar' 
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "Asia/Makassar",
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
-};
+  };
 
-  const renderStatus = (absenDate, jadwalDate) => {
-    if (!absenDate) {
-      return <span className="text-gray-500">Belum Absen</span>;
-    }
-    const lateStatus = isLate(jadwalDate, absenDate);
-    return lateStatus ? (
-      <span className="text-red-500">Terlambat</span>
-    ) : (
-      <span className="text-green-500">Tepat Waktu</span>
-    );
+  const isLate = (jadwal, absen) => {
+    if (!jadwal || !absen) return false;
+    const diffMinutes = (new Date(absen) - new Date(jadwal)) / (1000 * 60);
+    return diffMinutes > 15;
   };
-  
-  const HandleValidate = async (id) => {
-    // Update the local state immediately
-    setLocalUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === id ? { ...user, statusKelas: true } : user
-      )
-    );
-  
+
+  const handleValidate = async () => {
     try {
-      // Attempt to validate the class
-      await dispatch(validasiByKelas(id));
-      toast.success('Validate Success');
+      await dispatch(validasiByKelas(modalData.id, modalData.deskripsiKelas));
+      setModalData({ isOpen: false, id: null, deskripsiKelas: "" });
+      toast.success("Validasi berhasil!");
     } catch (error) {
-      // If validation fails, revert the local state change
-      setLocalUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === id ? { ...user, statusKelas: false } : user
-        )
-      );
-      toast.error('Error');
-      console.log(error);
+      toast.error("Gagal memvalidasi");
+      console.error("Gagal memvalidasi:", error);
     }
   };
-  
+
   return (
     <div className="relative overflow-x-auto px-5">
-      <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <table className="w-full text-sm text-left text-gray-500">
+        <thead className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
           <tr>
-            <th scope="col" className="px-2 py-2 text-center">No</th>
-            <th scope="col" className="px-2 py-2 text-center">Username</th>
-            <th scope="col" className="px-2 py-2 text-center">Kelas</th>
-            <th scope="col" className="px-2 py-2 text-center">Jadwal Kelas</th>
-            <th scope="col" className="px-2 py-2 text-center">Tanggal Absen</th>
-            <th scope="col" className="px-2 py-2 text-center">Validasi Kelas</th>
-            <th scope="col" className="px-2 py-2 text-center">Status Kehadiran</th>
-            <th scope="col" className="px-2 py-2 text-center">Jam</th>
-            <th scope="col" className="px-2 py-2 text-center">Action</th>
+            <th className="px-2 py-2 text-center">No</th>
+            <th className="px-2 py-2 text-center">Username</th>
+            <th className="px-2 py-2 text-center">Kelas</th>
+            <th className="px-2 py-2 text-center">Jadwal Kelas</th>
+            <th className="px-2 py-2 text-center">Tanggal Absen</th>
+            <th className="px-2 py-2 text-center">Validasi Kelas</th>
+            <th className="px-2 py-2 text-center">Status Kehadiran</th>
+            <th className="px-2 py-2 text-center">Action</th>
           </tr>
         </thead>
         <tbody>
-          {localUsers && localUsers.length > 0 ? (
-            localUsers.map((el, i) => {
-              return (
-                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" key={i}>
-                  <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    {i + 1}
-                  </th>
-                  <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    {el?.Guru.username}
-                  </th>
-                  <td className="px-6 py-4">
-                    {el?.Kelas?.name ? el.Kelas.name : 'belum tersedia'}
-                  </td>
-                  <td className="px-6 py-4">
-                    {el?.jadwalKelas ? formatDate(el.jadwalKelas) : 'belum tersedia'}
-                  </td>
-                  <td className="px-6 py-4">
-                    {el?.tanggalAbsen ? formatDate(el.tanggalAbsen) : 'belum tersedia'}
-                  </td>
-                  <td className="px-10 py-4 text-center">
-                    {el?.statusKelas ? (
-                      <FaCheck style={{ color: 'green' }} />
-                    ) : (
-                      <FaTimes style={{ color: 'red' }} />
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {renderStatus(el?.tanggalAbsen, el?.jadwalKelas)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <RealTimeClock />
-                  </td>
-                  <td className="p-2 py-4">
-                    <div className="flex flex-col space-y-2">
-                      <button
-                        onClick={() => HandleValidate(el.id)}
-                        className={`flex items-center justify-center py-1 px-2 rounded bg-teal-500 text-white hover:bg-teal-600 ${el.statusKelas ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        disabled={el.statusKelas} // Disable the button if already validated
-                      >
-                        <FaCalendarCheck className="mr-1" /> Validate
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })
+          {localUsers.length > 0 ? (
+            localUsers.map((el, i) => (
+              <tr key={i} className=" bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td className="px-2 py-4 text-center">{i + 1}</td>
+                <td className="px-2 py-4 text-center">{el?.Guru.username}</td>
+                <td className="px-2 py-4 text-center">{el?.Kelas?.name || "Belum tersedia"}</td>
+                <td className="px-2 py-4 text-center">{el?.jadwalKelas ? formatDate(el.jadwalKelas) : "Belum tersedia"}</td>
+                <td className="px-2 py-4 text-center">{el?.tanggalAbsen ? formatDate(el.tanggalAbsen) : "Belum tersedia"}</td>
+                <td className="px-2 py-4 text-center">{el?.statusKelas ? <FaCheck className="text-green-500 text-center" /> : <FaTimes className="text-red-500 text-center  " />}</td>
+                <td className="px-2 py-4 text-center">{el?.tanggalAbsen ? (isLate(el.jadwalKelas, el.tanggalAbsen) ? "Terlambat" : "Tepat Waktu") : "Belum Absen"}</td>
+                <td className="px-2 py-4 text-center">
+                <button
+  className={`px-4 py-2 rounded ${
+    el.statusKelas ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-700'
+  } text-white`}
+  disabled={el.statusKelas}
+>
+  {el.statusKelas ? 'Sudah validasi' : 'Validasi'}
+</button>
+
+                </td>
+              </tr>
+            ))
           ) : (
             <tr>
-              <td colSpan="9" className="px-6 py-4 text-center">
+              <td colSpan="8" className="px-6 py-4 text-center">
                 No data available
               </td>
             </tr>
           )}
         </tbody>
       </table>
+
+      {modalData.isOpen && (
+        <dialog open className="modal">
+          <div className="modal-box">
+            <button
+              onClick={() => setModalData({ isOpen: false, id: null, deskripsiKelas: "" })}
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            >
+              ✕
+            </button>
+
+            <h3 className="font-bold text-lg">Validasi Kehadiran</h3>
+            <p className="py-2">Pilih status kehadiran:</p>
+
+            <select
+              value={modalData.deskripsiKelas}
+              onChange={(e) => setModalData({ ...modalData, deskripsiKelas: e.target.value })}
+              className="select select-bordered w-full"
+            >
+              <option value="" disabled>Pilih Status</option>
+              <option value="Mengajar">Mengajar</option>
+              <option value="Langsung Keluar/Hanya Absen">Langsung Keluar/Hanya Absen</option>
+              <option value="Tidak Mengajar">Tidak Mengajar</option>
+            </select>
+
+            <div className="modal-action">
+              <button onClick={handleValidate} className="btn bg-teal-500 text-white hover:bg-teal-600">
+                Validasi
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
     </div>
   );
 };

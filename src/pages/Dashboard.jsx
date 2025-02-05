@@ -34,7 +34,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto text-white">
         <div className="bg-sky-700 shadow-lg rounded-lg p-6">
           <h1 className="text-2xl font-bold mb-4">
-            {greeting},{username}
+          ٱلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ ٱللَّٰهِ وَبَرَكَاتُهُ,Assalamualaikum warahmatullahi wabarakatuh, Kelas {username}
           </h1>
           <p className="">Welcome to your dashboard.</p>
         </div>
