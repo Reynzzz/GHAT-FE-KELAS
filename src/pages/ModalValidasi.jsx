@@ -26,7 +26,7 @@ export default function ModalValidasi({ id }) { // Menerima id sebagai props
         onClick={() => document.getElementById("my_modal_3").showModal()}
         className="flex items-center justify-center py-1 px-2 rounded bg-teal-500 text-white hover:bg-teal-600"
       >
-        <FaCalendarCheck className="mr-1" /> Validate
+        <FaCalendarCheck className="mr-1" /> Validasi
       </button>
 
       <dialog id="my_modal_3" className="modal">
