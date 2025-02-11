@@ -37,9 +37,18 @@ export const TeacherValidation = () => {
     return diffMinutes > 15;
   };
 
+  const openModal = (id) => {
+    setModalData({ isOpen: true, id, deskripsiKelas: "" });
+  };
+
   const handleValidate = async () => {
     try {
       await dispatch(validasiByKelas(modalData.id, modalData.deskripsiKelas));
+      setLocalUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === modalData.id ? { ...user, statusKelas: true } : user
+        )
+      );
       setModalData({ isOpen: false, id: null, deskripsiKelas: "" });
       toast.success("Validasi berhasil!");
     } catch (error) {
@@ -66,24 +75,22 @@ export const TeacherValidation = () => {
         <tbody>
           {localUsers.length > 0 ? (
             localUsers.map((el, i) => (
-              <tr key={i} className=" bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+              <tr key={i} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                 <td className="px-2 py-4 text-center">{i + 1}</td>
                 <td className="px-2 py-4 text-center">{el?.Guru.username}</td>
                 <td className="px-2 py-4 text-center">{el?.Kelas?.name || "Belum tersedia"}</td>
                 <td className="px-2 py-4 text-center">{el?.jadwalKelas ? formatDate(el.jadwalKelas) : "Belum tersedia"}</td>
                 <td className="px-2 py-4 text-center">{el?.tanggalAbsen ? formatDate(el.tanggalAbsen) : "Belum tersedia"}</td>
-                <td className="px-2 py-4 text-center">{el?.statusKelas ? <FaCheck className="text-green-500 text-center" /> : <FaTimes className="text-red-500 text-center  " />}</td>
+                <td className="px-2 py-4 text-center">{el?.statusKelas ? <FaCheck className="text-green-500" /> : <FaTimes className="text-red-500" />}</td>
                 <td className="px-2 py-4 text-center">{el?.tanggalAbsen ? (isLate(el.jadwalKelas, el.tanggalAbsen) ? "Terlambat" : "Tepat Waktu") : "Belum Absen"}</td>
                 <td className="px-2 py-4 text-center">
-                <button
-  className={`px-4 py-2 rounded ${
-    el.statusKelas ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-700'
-  } text-white`}
-  disabled={el.statusKelas}
->
-  {el.statusKelas ? 'Sudah validasi' : 'Validasi'}
-</button>
-
+                  <button
+                    className={`px-4 py-2 rounded ${el.statusKelas ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-700'} text-white`}
+                    onClick={() => openModal(el.id)}
+                    disabled={el.statusKelas}
+                  >
+                    {el.statusKelas ? 'Sudah Validasi' : 'Validasi'}
+                  </button>
                 </td>
               </tr>
             ))
